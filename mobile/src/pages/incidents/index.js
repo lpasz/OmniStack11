@@ -40,6 +40,7 @@ export default function Incidents()
         setIncidents( [ ...incidents, ...response.data ] )
         setPage( page + 1 )
         setTotal( response.headers.totalnumberofcases )
+        
         setLoading( false )
 
     }
