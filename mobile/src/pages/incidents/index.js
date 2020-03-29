@@ -1,44 +1,106 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Feather } from '@expo/vector-icons'
-import { View, Image, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
+import { View, Image, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import logo from '../../assets/logo.png'
 import Constants from 'expo-constants'
+import api from '../../services/api'
 
 export default function Incidents()
 {
+    const navigation = useNavigation()
+    const [ total, setTotal ] = useState( 0 );
+    const [ page, setPage ] = useState( 1 );
+    const [ loading, setLoading ] = useState( false );
+
+
+
+    function navigateToDetails( incident )
+    {
+        navigation.navigate( 'Details', { incident } )
+    }
+
+    const [ incidents, setIncidents ] = useState( [] )
+
+    async function LoadIncidents()
+    {
+        if ( loading && total > 0 && incidents.length === total )
+        {
+            return
+        }
+
+        setLoading( true )
+
+        const response = await api.get( '/incidents', {
+            params: {
+                page
+            }
+        } )
+
+        setIncidents( [ ...incidents, ...response.data ] )
+        setPage( page + 1 )
+        setTotal( response.headers.totalnumberofcases )
+        setLoading( false )
+
+    }
+
+
+    useEffect( () =>
+    {
+        LoadIncidents()
+    }, [] )
+
+
+    FlatListHeader = () =>
+    {
+        return (
+            <>
+                    <Text style={styles.welcome}>
+                        Bem Vindo!
+                </Text>
+                    <Text style={styles.description}>
+                        Escolha um dos casos e salve o dia!
+                </Text>
+            </>)
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Image style={styles.img} source={logo} />
                 <Text style={styles.headTxt} >
-                    Total de <Text style={styles.headBold}> 0 casos</Text>
+                    Total de <Text style={styles.headBold}> {total} casos</Text>
                 </Text>
             </View>
-            <Text style={styles.welcome}>
-                Bem Vindo!
-            </Text>
-            <Text style={styles.description}>
-                Escolha um dos casos e salve o dia!
-            </Text>
+
+
 
             <FlatList
-                data={[ 1, 2, 3, 4 ]}
-                renderItem={() => (
-                    <View style={styles.incident}>
+                ListHeaderComponent={FlatListHeader}
+                style={styles.incidentsList}
+                data={incidents}
+                keyExtractor={incident => String( incident.id )}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                onEndReached={LoadIncidents}
+                onEndReachedThreshold={0.2}
+                renderItem={( { item: i } ) => (
+                    <View key={i.id} style={styles.incident}>
                         <Text style={styles.incidentTitle}>ONG:</Text>
-                        <Text style={styles.incidentValue}>APAD</Text>
+                        <Text style={styles.incidentValue}>{i.name}</Text>
                         <Text style={styles.incidentTitle}>CASO:</Text>
-                        <Text style={styles.incidentValue}>Dev atropelado por um hipter de bike</Text>
+                        <Text style={styles.incidentValue}>{i.title}</Text>
                         <Text style={styles.incidentTitle}>VALOR:</Text>
-                        <Text style={styles.incidentValue}>R$120</Text>
+                        <Text style={styles.incidentValue}>{i.cost = Intl.NumberFormat( 'pt-BR', { style: "currency", currency: 'BRL' } ).format( i.value )
+                        }</Text>
                         <TouchableOpacity
-                            onPress={() => { }}
-                            style={styles.details}>
-                            <Text style={styles.detailsText}>Veja mais detalhes</Text>
+                            onPress={() => navigateToDetails( i )}
+                            style={styles.details}
+                        >
+                            <Text style={styles.detailsText}>Veja mais detalhes ...</Text>
                             <Feather name="arrow-right" size={18} color="#e02041" />
                         </TouchableOpacity>
                     </View> )}
-                style={styles.incidentsList}
             />
         </View>
     )
@@ -48,12 +110,13 @@ const styles = StyleSheet.create( {
     container: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: Constants.statusBarHeight + 30,
+        paddingTop: Constants.statusBarHeight + 20,
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+        marginBottom: 20,
 
     },
     headTxt: {
