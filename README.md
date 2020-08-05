@@ -4,6 +4,19 @@
 
 ### Screenshots and Gifs
 
+## Login Screen:
+<img src='./README_FILES/login.png'/>
+
+## Register Screen:
+<img src='./README_FILES/register-user.png'/>
+
+## List All User Screen:
+<img src='./README_FILES/list-all-cases.png'/>
+
+## New Case Screen:
+<img src='./README_FILES/add-new-cases.png'/>
+
+
 ## React web app(gif):
 
 <img src='./README_FILES/be-the-hero.gif'>
